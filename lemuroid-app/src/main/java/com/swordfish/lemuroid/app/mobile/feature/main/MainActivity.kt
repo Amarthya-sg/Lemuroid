@@ -4,7 +4,9 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.SystemBarStyle
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -103,6 +105,16 @@ class MainActivity : RetrogradeComponentActivity(), BusyActivity {
     lateinit var inputDeviceManager: InputDeviceManager
 
     private val reviewManager = ReviewManager()
+
+    private var pendingCustomThumbnailGame: Game? = null
+    private val customThumbnailPicker: ActivityResultLauncher<String> =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            val game = pendingCustomThumbnailGame
+            pendingCustomThumbnailGame = null
+            if (uri != null && game != null) {
+                gameInteractor.onSetCustomThumbnail(game, uri)
+            }
+        }
 
     private val mainViewModel: MainViewModel by viewModels {
         MainViewModel.Factory(applicationContext, saveSyncManager)
@@ -355,6 +367,8 @@ class MainActivity : RetrogradeComponentActivity(), BusyActivity {
                     gameInteractor.onFavoriteToggle(game, isFavorite)
                 },
                 onCreateShortcut = { gameInteractor.onCreateShortcut(it) },
+                onSetCustomThumbnail = { pickCustomThumbnail(it) },
+                onRemoveCustomThumbnail = { gameInteractor.onRemoveCustomThumbnail(it) },
             )
 
             if (infoDialogDisplayed.value) {
@@ -375,6 +389,11 @@ class MainActivity : RetrogradeComponentActivity(), BusyActivity {
                 )
             }
         }
+    }
+
+    private fun pickCustomThumbnail(game: Game) {
+        pendingCustomThumbnailGame = game
+        customThumbnailPicker.launch("image/*")
     }
 
     override fun activity(): Activity = this

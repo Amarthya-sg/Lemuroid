@@ -22,6 +22,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AppShortcut
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material3.BottomSheetDefaults
@@ -55,6 +57,8 @@ fun MainGameContextActions(
     onGameRestart: (Game) -> Unit,
     onFavoriteToggle: (Game, Boolean) -> Unit,
     onCreateShortcut: (Game) -> Unit,
+    onSetCustomThumbnail: (Game) -> Unit,
+    onRemoveCustomThumbnail: (Game) -> Unit,
 ) {
     val modalSheetState = rememberModalBottomSheetState(true)
     val selectedGame = selectedGameState.value
@@ -80,6 +84,8 @@ fun MainGameContextActions(
                 onFavoriteToggle = onFavoriteToggle,
                 shortcutSupported = shortcutSupported,
                 onCreateShortcut = onCreateShortcut,
+                onSetCustomThumbnail = onSetCustomThumbnail,
+                onRemoveCustomThumbnail = onRemoveCustomThumbnail,
             )
         }
     }
@@ -94,6 +100,8 @@ private fun ContextActionContent(
     onFavoriteToggle: (Game, Boolean) -> Unit,
     shortcutSupported: Boolean,
     onCreateShortcut: (Game) -> Unit,
+    onSetCustomThumbnail: (Game) -> Unit,
+    onRemoveCustomThumbnail: (Game) -> Unit,
 ) {
     Column(
         modifier =
@@ -140,6 +148,30 @@ private fun ContextActionContent(
             )
         }
 
+        ContextActionEntry(
+            label = stringResource(
+                id = if (selectedGame.customCoverPath == null) {
+                    R.string.game_context_menu_set_custom_thumbnail
+                } else {
+                    R.string.game_context_menu_change_thumbnail
+                },
+            ),
+            icon = Icons.Default.Image,
+            onClick = {
+                onSetCustomThumbnail(selectedGame)
+                selectedGameState.value = null
+            },
+        )
+        if (selectedGame.customCoverPath != null) {
+            ContextActionEntry(
+                label = stringResource(id = R.string.game_context_menu_remove_thumbnail),
+                icon = Icons.Default.Delete,
+                onClick = {
+                    onRemoveCustomThumbnail(selectedGame)
+                    selectedGameState.value = null
+                },
+            )
+        }
         if (shortcutSupported) {
             ContextActionEntry(
                 label = stringResource(id = R.string.game_context_menu_create_shortcut),

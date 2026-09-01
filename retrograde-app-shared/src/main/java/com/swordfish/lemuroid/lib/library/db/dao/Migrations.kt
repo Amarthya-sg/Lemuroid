@@ -4,6 +4,13 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 object Migrations {
+    val VERSION_9_10: Migration =
+        object : Migration(9, 10) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE `games` ADD COLUMN `customCoverPath` TEXT")
+            }
+        }
+
     val VERSION_8_9: Migration =
         object : Migration(8, 9) {
             override fun migrate(database: SupportSQLiteDatabase) {
