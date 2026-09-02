@@ -4,6 +4,13 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 object Migrations {
+    val VERSION_10_11: Migration =
+        object : Migration(10, 11) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE `games` ADD COLUMN `customDisplayName` TEXT")
+            }
+        }
+
     val VERSION_9_10: Migration =
         object : Migration(9, 10) {
             override fun migrate(database: SupportSQLiteDatabase) {

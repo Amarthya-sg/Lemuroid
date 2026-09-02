@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,6 +23,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -152,6 +155,8 @@ class MainActivity : RetrogradeComponentActivity(), BusyActivity {
                 remember {
                     mutableStateOf(false)
                 }
+            val renameGameState = remember { mutableStateOf<Game?>(null) }
+            val renameValue = remember { mutableStateOf("") }
 
             LaunchedEffect(currentRoute) {
                 mainViewModel.changeRoute(currentRoute)
@@ -369,7 +374,41 @@ class MainActivity : RetrogradeComponentActivity(), BusyActivity {
                 onCreateShortcut = { gameInteractor.onCreateShortcut(it) },
                 onSetCustomThumbnail = { pickCustomThumbnail(it) },
                 onRemoveCustomThumbnail = { gameInteractor.onRemoveCustomThumbnail(it) },
+                onRenameGame = {
+                    renameValue.value = it.customDisplayName ?: it.title
+                    renameGameState.value = it
+                },
             )
+
+            renameGameState.value?.let { game ->
+                AlertDialog(
+                    onDismissRequest = { renameGameState.value = null },
+                    title = { androidx.compose.material3.Text(stringResource(R.string.game_rename_title)) },
+                    text = {
+                        OutlinedTextField(
+                            value = renameValue.value,
+                            onValueChange = { renameValue.value = it },
+                            singleLine = true,
+                            label = { androidx.compose.material3.Text(stringResource(R.string.game_rename_hint)) },
+                        )
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { renameGameState.value = null }) {
+                            androidx.compose.material3.Text(stringResource(R.string.game_rename_cancel))
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                gameInteractor.onRenameGame(game, renameValue.value)
+                                renameGameState.value = null
+                            },
+                        ) {
+                            androidx.compose.material3.Text(stringResource(R.string.game_rename_save))
+                        }
+                    },
+                )
+            }
 
             if (infoDialogDisplayed.value) {
                 val message =

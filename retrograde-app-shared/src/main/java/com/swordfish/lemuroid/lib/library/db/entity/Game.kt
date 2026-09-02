@@ -50,6 +50,7 @@ data class Game(
     val lastPlayedAt: Long? = null,
     val isFavorite: Boolean = false,
     val customCoverPath: String? = null,
+    val customDisplayName: String? = null,
 ) : Serializable {
     companion object {
         val DIFF_CALLBACK =

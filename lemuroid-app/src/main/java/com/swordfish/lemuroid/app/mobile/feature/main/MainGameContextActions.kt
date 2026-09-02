@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.AppShortcut
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.RestartAlt
@@ -59,6 +60,7 @@ fun MainGameContextActions(
     onCreateShortcut: (Game) -> Unit,
     onSetCustomThumbnail: (Game) -> Unit,
     onRemoveCustomThumbnail: (Game) -> Unit,
+    onRenameGame: (Game) -> Unit,
 ) {
     val modalSheetState = rememberModalBottomSheetState(true)
     val selectedGame = selectedGameState.value
@@ -86,6 +88,7 @@ fun MainGameContextActions(
                 onCreateShortcut = onCreateShortcut,
                 onSetCustomThumbnail = onSetCustomThumbnail,
                 onRemoveCustomThumbnail = onRemoveCustomThumbnail,
+                onRenameGame = onRenameGame,
             )
         }
     }
@@ -102,6 +105,7 @@ private fun ContextActionContent(
     onCreateShortcut: (Game) -> Unit,
     onSetCustomThumbnail: (Game) -> Unit,
     onRemoveCustomThumbnail: (Game) -> Unit,
+    onRenameGame: (Game) -> Unit,
 ) {
     Column(
         modifier =
@@ -111,6 +115,14 @@ private fun ContextActionContent(
     ) {
         ContextActionHeader(game = selectedGame)
         Divider()
+        ContextActionEntry(
+            label = stringResource(id = R.string.game_context_menu_rename),
+            icon = Icons.Default.Edit,
+            onClick = {
+                onRenameGame(selectedGame)
+                selectedGameState.value = null
+            },
+        )
         ContextActionEntry(
             label = stringResource(id = R.string.game_context_menu_resume),
             icon = Icons.Default.PlayArrow,

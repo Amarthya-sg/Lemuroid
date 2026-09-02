@@ -78,6 +78,13 @@ class GameInteractor(
         }
     }
 
+    fun onRenameGame(game: Game, displayName: String?) {
+        GlobalScope.launch(Dispatchers.IO) {
+            val normalizedName = displayName?.trim()?.takeIf { it.isNotEmpty() }
+            retrogradeDb.gameDao().update(game.copy(customDisplayName = normalizedName))
+        }
+    }
+
     fun onCreateShortcut(game: Game) {
         GlobalScope.launch {
             shortcutsGenerator.pinShortcutForGame(game)
