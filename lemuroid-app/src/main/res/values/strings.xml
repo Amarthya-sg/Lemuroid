@@ -42,6 +42,16 @@
     <string name="touch_button_color_picker_title">Custom color</string>
     <string name="touch_button_color_picker_hint">Drag the selector to choose a color</string>
     <string name="touch_button_color_opacity_percent">%1$d%%</string>
+    <string name="settings_theme_color_title">Theme color</string>
+    <string name="settings_theme_primary_color">Primary color</string>
+    <string name="settings_theme_generated_automatically">Other theme colors are generated automatically</string>
+    <string name="settings_theme_choose_hue_saturation">Choose hue and saturation</string>
+    <string name="settings_theme_brightness">Brightness · %1$d%%</string>
+    <string name="settings_theme_color_wheel_description">Theme color wheel; drag to choose hue and saturation</string>
+    <string name="settings_theme_increase_hue">Increase hue</string>
+    <string name="settings_theme_decrease_hue">Decrease hue</string>
+    <string name="settings_theme_increase_saturation">Increase saturation</string>
+    <string name="settings_theme_decrease_saturation">Decrease saturation</string>
     <string name="settings_title_tilt_sensitivity">Tilt sensor sensitivity</string>
     <string name="settings_title_hd_quality">HD mode quality</string>
     <string name="settings_title_maximum_cache_usage">Cache size limit</string>

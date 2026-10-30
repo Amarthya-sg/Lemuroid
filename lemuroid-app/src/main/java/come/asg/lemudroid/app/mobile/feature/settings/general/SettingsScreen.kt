@@ -1,35 +1,36 @@
 package come.asg.lemudroid.app.mobile.feature.settings.general
 
 import android.net.Uri
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
@@ -241,24 +242,22 @@ private fun GeneralSettings() {
 private fun ThemePrimaryColorSettings() {
     val context = LocalContext.current
     val primary = LemuroidThemePreferences.getPrimaryColor(context)
-    val hsv =
-        remember(primary) {
-            FloatArray(3).also { values ->
-                android.graphics.Color.colorToHSV(primary.toArgb(), values)
-            }
-        }
-    val hue = remember(primary) { mutableFloatStateOf(hsv[0]) }
-    val saturation = remember(primary) { mutableFloatStateOf(hsv[1]) }
-    val brightness = remember(primary) { mutableFloatStateOf(hsv[2]) }
-
-    fun updateColor() {
+    val hsv = remember(primary) { LemuroidThemePreferences.getPrimaryHsv(context) }
+    // Keep HSV components independent: converting a neutral/black color back to HSV loses hue.
+    val hue = remember { mutableFloatStateOf(hsv[0]) }
+    val saturation = remember { mutableFloatStateOf(hsv[1]) }
+    val brightness = remember { mutableFloatStateOf(hsv[2]) }
+    fun saveColor() {
         LemuroidThemePreferences.setPrimaryColor(
             context,
             Color.hsv(hue.floatValue, saturation.floatValue, brightness.floatValue),
+            hue.floatValue,
+            saturation.floatValue,
+            brightness.floatValue,
         )
     }
 
-    LemuroidCardSettingsGroup(title = { Text("Theme color") }) {
+    LemuroidCardSettingsGroup(title = { Text(stringResource(R.string.settings_theme_color_title)) }) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -269,34 +268,43 @@ private fun ThemePrimaryColorSettings() {
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 androidx.compose.foundation.layout.Box(
-                    modifier = Modifier.background(primary, CircleShape).padding(20.dp),
+                    modifier =
+                        Modifier.size(40.dp).drawWithCache {
+                            onDrawBehind {
+                                drawCircle(
+                                    Color.hsv(hue.floatValue, saturation.floatValue, brightness.floatValue),
+                                    radius = size.minDimension / 2f,
+                                )
+                            }
+                        },
                 )
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Primary color", style = androidx.compose.material3.MaterialTheme.typography.titleSmall)
+                    Text(stringResource(R.string.settings_theme_primary_color), style = androidx.compose.material3.MaterialTheme.typography.titleSmall)
                     Text(
-                        "Other theme colors are generated automatically",
+                        stringResource(R.string.settings_theme_generated_automatically),
                         style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
                     )
                 }
             }
-            Text("Choose hue and saturation", style = androidx.compose.material3.MaterialTheme.typography.labelMedium)
+            Text(stringResource(R.string.settings_theme_choose_hue_saturation), style = androidx.compose.material3.MaterialTheme.typography.labelMedium)
             ThemeColorWheel(
-                hue = hue.floatValue,
-                saturation = saturation.floatValue,
-                brightness = brightness.floatValue,
+                hue = hue,
+                saturation = saturation,
+                brightness = brightness,
                 onColorChange = { newHue, newSaturation ->
                     hue.floatValue = newHue
                     saturation.floatValue = newSaturation
-                    updateColor()
                 },
+                onColorChangeFinished = { saveColor() },
             )
-            Text("Brightness · ${(brightness.floatValue * 100).toInt()}%", style = androidx.compose.material3.MaterialTheme.typography.labelMedium)
+            Text(
+                stringResource(R.string.settings_theme_brightness, (brightness.floatValue * 100).toInt()),
+                style = androidx.compose.material3.MaterialTheme.typography.labelMedium,
+            )
             Slider(
                 value = brightness.floatValue,
-                onValueChange = {
-                    brightness.floatValue = it
-                    updateColor()
-                },
+                onValueChange = { brightness.floatValue = it },
+                onValueChangeFinished = { saveColor() },
                 valueRange = 0f..1f,
             )
         }
@@ -305,83 +313,131 @@ private fun ThemePrimaryColorSettings() {
 
 @Composable
 private fun ThemeColorWheel(
-    hue: Float,
-    saturation: Float,
-    brightness: Float,
+    hue: State<Float>,
+    saturation: State<Float>,
+    brightness: State<Float>,
     onColorChange: (Float, Float) -> Unit,
+    onColorChangeFinished: () -> Unit,
 ) {
     val wheelColors =
         remember {
             listOf(Color.Red, Color.Yellow, Color.Green, Color.Cyan, Color.Blue, Color.Magenta, Color.Red)
         }
     val latestOnColorChange = rememberUpdatedState(onColorChange)
+    val latestOnColorChangeFinished = rememberUpdatedState(onColorChangeFinished)
+    val wheelDescription = stringResource(R.string.settings_theme_color_wheel_description)
+    val increaseHueLabel = stringResource(R.string.settings_theme_increase_hue)
+    val decreaseHueLabel = stringResource(R.string.settings_theme_decrease_hue)
+    val increaseSaturationLabel = stringResource(R.string.settings_theme_increase_saturation)
+    val decreaseSaturationLabel = stringResource(R.string.settings_theme_decrease_saturation)
 
     BoxWithConstraints(
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
         contentAlignment = androidx.compose.ui.Alignment.Center,
     ) {
         val wheelSize = maxWidth.coerceAtMost(280.dp)
-        Canvas(
+        Box(
             modifier =
                 Modifier.size(wheelSize)
-                    .semantics { contentDescription = "Theme color wheel; drag to choose hue and saturation" }
+                    .semantics {
+                        contentDescription = wheelDescription
+                        customActions = listOf(
+                            CustomAccessibilityAction(increaseHueLabel) {
+                                latestOnColorChange.value((hue.value + 15f) % 360f, saturation.value)
+                                latestOnColorChangeFinished.value()
+                                true
+                            },
+                            CustomAccessibilityAction(decreaseHueLabel) {
+                                latestOnColorChange.value((hue.value - 15f + 360f) % 360f, saturation.value)
+                                latestOnColorChangeFinished.value()
+                                true
+                            },
+                            CustomAccessibilityAction(increaseSaturationLabel) {
+                                latestOnColorChange.value(hue.value, (saturation.value + 0.1f).coerceAtMost(1f))
+                                latestOnColorChangeFinished.value()
+                                true
+                            },
+                            CustomAccessibilityAction(decreaseSaturationLabel) {
+                                latestOnColorChange.value(hue.value, (saturation.value - 0.1f).coerceAtLeast(0f))
+                                latestOnColorChangeFinished.value()
+                                true
+                            },
+                        )
+                    }
                     .pointerInput(Unit) {
                         detectTapGestures { position ->
-                            selectWheelColor(position, size.width.toFloat(), size.height.toFloat(), 16.dp.toPx()) { selectedHue, selectedSaturation ->
-                                latestOnColorChange.value(selectedHue, selectedSaturation)
+                            val selection = selectWheelColor(position, size.width.toFloat(), size.height.toFloat(), 16.dp.toPx())
+                            if (selection != null) {
+                                latestOnColorChange.value(selection.first, selection.second)
+                                latestOnColorChangeFinished.value()
                             }
                         }
                     }
                     .pointerInput(Unit) {
                         detectDragGestures(
                             onDragStart = { position ->
-                                selectWheelColor(position, size.width.toFloat(), size.height.toFloat(), 16.dp.toPx()) { selectedHue, selectedSaturation ->
-                                    latestOnColorChange.value(selectedHue, selectedSaturation)
+                                selectWheelColor(position, size.width.toFloat(), size.height.toFloat(), 16.dp.toPx())?.let { selection ->
+                                    latestOnColorChange.value(selection.first, selection.second)
                                 }
                             },
                             onDrag = { change, _ ->
                                 change.consume()
-                                selectWheelColor(change.position, size.width.toFloat(), size.height.toFloat(), 16.dp.toPx()) { selectedHue, selectedSaturation ->
-                                    latestOnColorChange.value(selectedHue, selectedSaturation)
+                                selectWheelColor(
+                                    change.position,
+                                    size.width.toFloat(),
+                                    size.height.toFloat(),
+                                    16.dp.toPx(),
+                                    allowOutside = true,
+                                )?.let { selection ->
+                                    latestOnColorChange.value(selection.first, selection.second)
                                 }
                             },
+                            onDragEnd = { latestOnColorChangeFinished.value() },
+                            onDragCancel = { latestOnColorChangeFinished.value() },
                         )
-                    },
-        ) {
-            val center = Offset(size.width / 2f, size.height / 2f)
-            val radius = size.minDimension / 2f - 16.dp.toPx()
-            drawCircle(
-                brush = Brush.sweepGradient(colors = wheelColors, center = center),
-                radius = radius,
-                center = center,
-            )
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(Color.White, Color.Transparent),
-                    center = center,
-                    radius = radius,
-                ),
-                radius = radius,
-                center = center,
-            )
-            drawCircle(
-                color = Color.Black.copy(alpha = 0.35f),
-                radius = radius,
-                center = center,
-                style = Stroke(width = 1.dp.toPx()),
-            )
+                    }
+                    .drawWithCache {
+                        val center = Offset(size.width / 2f, size.height / 2f)
+                        val radius = (size.minDimension / 2f - 16.dp.toPx()).coerceAtLeast(1f)
+                        val hueBrush = Brush.sweepGradient(colors = wheelColors, center = center)
+                        val saturationBrush =
+                            Brush.radialGradient(
+                                colors = listOf(Color.White, Color.Transparent),
+                                center = center,
+                                radius = radius,
+                            )
+                        onDrawBehind {
+                            drawCircle(brush = hueBrush, radius = radius, center = center)
+                            drawCircle(brush = saturationBrush, radius = radius, center = center)
+                            drawCircle(
+                                color = Color.Black.copy(alpha = 0.35f),
+                                radius = radius,
+                                center = center,
+                                style = Stroke(width = 1.dp.toPx()),
+                            )
 
-            val angle = hue * (PI.toFloat() / 180f)
-            val markerRadius = radius * saturation.coerceIn(0f, 1f)
-            val markerCenter =
-                Offset(
-                    center.x + cos(angle) * markerRadius,
-                    center.y + sin(angle) * markerRadius,
-                )
-            drawCircle(Color.Black.copy(alpha = 0.75f), radius = 10.dp.toPx(), center = markerCenter)
-            drawCircle(Color.White, radius = 7.dp.toPx(), center = markerCenter)
-            drawCircle(Color.hsv(hue, saturation, brightness), radius = 5.dp.toPx(), center = markerCenter)
-        }
+                            // Read selection in the draw phase: pointer moves redraw this layer without
+                            // rebuilding the cached hue and saturation gradients.
+                            val currentHue = hue.value
+                            val currentSaturation = saturation.value.coerceIn(0f, 1f)
+                            val currentBrightness = brightness.value
+                            val angle = currentHue * (PI.toFloat() / 180f)
+                            val markerRadius = radius * currentSaturation
+                            val markerCenter =
+                                Offset(
+                                    center.x + cos(angle) * markerRadius,
+                                    center.y + sin(angle) * markerRadius,
+                                )
+                            drawCircle(Color.Black.copy(alpha = 0.75f), radius = 10.dp.toPx(), center = markerCenter)
+                            drawCircle(Color.White, radius = 7.dp.toPx(), center = markerCenter)
+                            drawCircle(
+                                Color.hsv(currentHue, currentSaturation, currentBrightness),
+                                radius = 5.dp.toPx(),
+                                center = markerCenter,
+                            )
+                        }
+                    },
+        )
     }
 }
 
@@ -390,14 +446,16 @@ private fun selectWheelColor(
     width: Float,
     height: Float,
     inset: Float,
-    onSelection: (Float, Float) -> Unit,
-) {
+    allowOutside: Boolean = false,
+): Pair<Float, Float>? {
     val dx = position.x - width / 2f
     val dy = position.y - height / 2f
     val radius = (minOf(width, height) / 2f - inset).coerceAtLeast(1f)
+    val distance = hypot(dx, dy)
+    if (!allowOutside && distance > radius) return null
     val hue = ((atan2(dy, dx) * (180f / PI.toFloat())) + 360f) % 360f
-    val saturation = (hypot(dx, dy) / radius).coerceIn(0f, 1f)
-    onSelection(hue, saturation)
+    val saturation = (distance / radius).coerceIn(0f, 1f)
+    return hue to saturation
 }
 
 @Composable

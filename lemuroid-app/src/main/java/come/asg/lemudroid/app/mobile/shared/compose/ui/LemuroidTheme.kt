@@ -17,6 +17,9 @@ import come.asg.lemudroid.lib.preferences.SharedPreferencesHelper
 
 object LemuroidThemePreferences {
     private const val PRIMARY_COLOR_KEY = "theme_primary_color"
+    private const val PRIMARY_HUE_KEY = "theme_primary_hue"
+    private const val PRIMARY_SATURATION_KEY = "theme_primary_saturation"
+    private const val PRIMARY_BRIGHTNESS_KEY = "theme_primary_brightness"
     private val defaultPrimary = Color(0xFF4BE37A)
     private val primaryColorState = mutableStateOf<Color?>(null)
 
@@ -28,11 +31,32 @@ object LemuroidThemePreferences {
         return primaryColorState.value ?: defaultPrimary
     }
 
-    fun setPrimaryColor(context: android.content.Context, color: Color) {
+    fun getPrimaryHsv(context: android.content.Context): FloatArray {
+        val values = FloatArray(3)
+        android.graphics.Color.colorToHSV(getPrimaryColor(context).toArgb(), values)
+        val preferences = SharedPreferencesHelper.getSharedPreferences(context)
+        values[0] = preferences.getFloat(PRIMARY_HUE_KEY, values[0]).coerceIn(0f, 360f)
+        values[1] = preferences.getFloat(PRIMARY_SATURATION_KEY, values[1]).coerceIn(0f, 1f)
+        values[2] = preferences.getFloat(PRIMARY_BRIGHTNESS_KEY, values[2]).coerceIn(0f, 1f)
+        return values
+    }
+
+    fun setPrimaryColor(
+        context: android.content.Context,
+        color: Color,
+        hue: Float? = null,
+        saturation: Float? = null,
+        brightness: Float? = null,
+    ) {
         primaryColorState.value = color
+        val hsv = FloatArray(3)
+        android.graphics.Color.colorToHSV(color.toArgb(), hsv)
         SharedPreferencesHelper.getSharedPreferences(context)
             .edit()
             .putInt(PRIMARY_COLOR_KEY, color.toArgb())
+            .putFloat(PRIMARY_HUE_KEY, (hue ?: hsv[0]).coerceIn(0f, 360f))
+            .putFloat(PRIMARY_SATURATION_KEY, (saturation ?: hsv[1]).coerceIn(0f, 1f))
+            .putFloat(PRIMARY_BRIGHTNESS_KEY, (brightness ?: hsv[2]).coerceIn(0f, 1f))
             .apply()
     }
 }
@@ -131,6 +155,9 @@ private val AmoledColorScheme =
         surfaceVariant = Color(0xFF101010),
     )
 
+private fun readableContentColor(background: Color): Color =
+    if (background.luminance() > 0.179f) Color.Black else Color.White
+
 private fun generatedDarkColorScheme(
     primary: Color,
     amoled: Boolean,
@@ -144,8 +171,8 @@ private fun generatedDarkColorScheme(
     val tertiary = Color.hsv((hsv[0] + 235f) % 360f, (hsv[1] * 0.48f).coerceAtLeast(0.25f), hsv[2] * 0.78f)
     val primaryContainer = primary.copy(alpha = 0.32f).compositeOver(surfaceVariant)
     val secondaryContainer = secondary.copy(alpha = 0.28f).compositeOver(surfaceVariant)
-    val onPrimary = if (primary.luminance() > 0.55f) Color(0xFF07130A) else Color.White
-    val onPrimaryContainer = if (primaryContainer.luminance() > 0.5f) Color(0xFF07130A) else primary.copy(alpha = 0.92f)
+    val onPrimary = readableContentColor(primary)
+    val onPrimaryContainer = readableContentColor(primaryContainer)
 
     return HtmlDarkColorScheme.copy(
         primary = primary,
@@ -153,11 +180,11 @@ private fun generatedDarkColorScheme(
         primaryContainer = primaryContainer,
         onPrimaryContainer = onPrimaryContainer,
         secondary = secondary,
-        onSecondary = if (secondary.luminance() > 0.55f) Color(0xFF07130A) else Color.White,
+        onSecondary = readableContentColor(secondary),
         secondaryContainer = secondaryContainer,
-        onSecondaryContainer = secondary,
+        onSecondaryContainer = readableContentColor(secondaryContainer),
         tertiary = tertiary,
-        onTertiary = if (tertiary.luminance() > 0.55f) Color(0xFF07130A) else Color.White,
+        onTertiary = readableContentColor(tertiary),
         background = background,
         surface = surface,
         surfaceVariant = surfaceVariant,
@@ -166,20 +193,35 @@ private fun generatedDarkColorScheme(
     )
 }
 
+private fun generatedLightColorScheme(
+    base: androidx.compose.material3.ColorScheme,
+    primary: Color,
+): androidx.compose.material3.ColorScheme {
+    val primaryContainer = primary.copy(alpha = 0.14f).compositeOver(base.surface)
+    return base.copy(
+        primary = primary,
+        onPrimary = readableContentColor(primary),
+        primaryContainer = primaryContainer,
+        onPrimaryContainer = readableContentColor(primaryContainer),
+    )
+}
+
 @Composable
 fun AppTheme(
     darkTheme: Boolean = true,
     content: @Composable () -> Unit,
 ) {
+    val context = LocalContext.current
     val amoledTheme =
-        SharedPreferencesHelper.getSharedPreferences(LocalContext.current)
+        SharedPreferencesHelper.getSharedPreferences(context)
             .getBoolean("amoled_theme", false)
-    val primaryColor = LemuroidThemePreferences.getPrimaryColor(LocalContext.current)
+    val primaryColor = LemuroidThemePreferences.getPrimaryColor(context)
     val colors =
         when {
             darkTheme -> generatedDarkColorScheme(primaryColor, amoledTheme)
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> dynamicLightColorScheme(LocalContext.current)
-            else -> LightColorScheme
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
+                generatedLightColorScheme(dynamicLightColorScheme(context), primaryColor)
+            else -> generatedLightColorScheme(LightColorScheme, primaryColor)
         }
 
     MaterialTheme(colorScheme = colors) {
