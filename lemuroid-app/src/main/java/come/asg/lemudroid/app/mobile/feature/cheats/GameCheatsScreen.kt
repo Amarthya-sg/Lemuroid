@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -52,6 +53,7 @@ fun GameCheatsScreen(
     val cheats by gameCheatDao.observeForGame(gameId).collectAsState(initial = emptyList())
     val scope = rememberCoroutineScope()
     var showAddDialog by remember { mutableStateOf(false) }
+    var editingCheat by remember { mutableStateOf<GameCheat?>(null) }
 
     Column(
         modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
@@ -87,6 +89,7 @@ fun GameCheatsScreen(
             cheats.forEach { cheat ->
                 GameCheatItem(
                     cheat = cheat,
+                    onEdit = { editingCheat = cheat },
                     onEnabledChanged = { enabled ->
                         onCheatsChanged()
                         scope.launch {
@@ -108,7 +111,7 @@ fun GameCheatsScreen(
     }
 
     if (showAddDialog) {
-        AddGameCheatDialog(
+        GameCheatEditorDialog(
             onDismiss = { showAddDialog = false },
             onSave = { name, code ->
                 onCheatsChanged()
@@ -129,11 +132,27 @@ fun GameCheatsScreen(
             },
         )
     }
+
+    editingCheat?.let { cheat ->
+        GameCheatEditorDialog(
+            cheat = cheat,
+            onDismiss = { editingCheat = null },
+            onSave = { name, code ->
+                onCheatsChanged()
+                scope.launch {
+                    runCatching { gameCheatDao.update(cheat.copy(name = name, code = code)) }
+                        .onSuccess { editingCheat = null }
+                        .onFailure { Timber.e(it, "Unable to edit cheat ${cheat.id}") }
+                }
+            },
+        )
+    }
 }
 
 @Composable
 private fun GameCheatItem(
     cheat: GameCheat,
+    onEdit: () -> Unit,
     onEnabledChanged: (Boolean) -> Unit,
     onDelete: () -> Unit,
 ) {
@@ -153,6 +172,12 @@ private fun GameCheatItem(
                 )
             }
             Switch(checked = cheat.enabled, onCheckedChange = onEnabledChanged)
+            IconButton(onClick = onEdit) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = androidx.compose.ui.res.stringResource(R.string.game_cheats_edit_action, cheat.name),
+                )
+            }
             IconButton(onClick = onDelete) {
                 Icon(
                     imageVector = Icons.Default.DeleteOutline,
@@ -165,17 +190,24 @@ private fun GameCheatItem(
 }
 
 @Composable
-private fun AddGameCheatDialog(
+private fun GameCheatEditorDialog(
+    cheat: GameCheat? = null,
     onDismiss: () -> Unit,
     onSave: (name: String, code: String) -> Unit,
 ) {
-    var name by remember { mutableStateOf("") }
-    var code by remember { mutableStateOf("") }
+    var name by remember(cheat?.id) { mutableStateOf(cheat?.name.orEmpty()) }
+    var code by remember(cheat?.id) { mutableStateOf(cheat?.code.orEmpty()) }
     val canSave = name.isNotBlank() && code.isNotBlank()
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(androidx.compose.ui.res.stringResource(R.string.game_cheats_add_title)) },
+        title = {
+            Text(
+                androidx.compose.ui.res.stringResource(
+                    if (cheat == null) R.string.game_cheats_add_title else R.string.game_cheats_edit_title,
+                ),
+            )
+        },
         text = {
             Column {
                 OutlinedTextField(
@@ -201,7 +233,11 @@ private fun AddGameCheatDialog(
                 enabled = canSave,
                 onClick = { onSave(name.trim(), code.trim()) },
             ) {
-                Text(androidx.compose.ui.res.stringResource(R.string.game_cheats_save))
+                Text(
+                    androidx.compose.ui.res.stringResource(
+                        if (cheat == null) R.string.game_cheats_save else R.string.game_cheats_update,
+                    ),
+                )
             }
         },
         dismissButton = {

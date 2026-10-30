@@ -176,7 +176,10 @@
     <string name="game_cheats_code">Cheat code</string>
     <string name="game_cheats_empty">No cheats added for this game yet.</string>
     <string name="game_cheats_delete">Delete %1$s</string>
+    <string name="game_cheats_edit_action">Edit %1$s</string>
+    <string name="game_cheats_edit_title">Edit cheat</string>
     <string name="game_cheats_save">Save</string>
+    <string name="game_cheats_update">Update</string>
     <string name="game_menu_state">State %1$s</string>
     <string name="game_menu_change_disk_button">Change Disk</string>
     <string name="game_menu_edit_touch_controls">Edit Controls</string>
