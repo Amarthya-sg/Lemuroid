@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -13,6 +14,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
@@ -71,12 +74,14 @@ fun GlassSurface(
     outlineWidth: Dp = 0.dp,
     outlineHaloColor: Color = Color.Transparent,
     outlineHaloWidth: Dp = 0.dp,
+    shape: Shape? = null,
     content: @Composable BoxWithConstraintsScope.() -> Unit = { },
 ) {
+    val clippedModifier = if (shape == null) modifier else modifier.clip(shape)
     BoxWithConstraints(
         contentAlignment = Alignment.Center,
         modifier =
-            modifier.drawWithCache {
+            clippedModifier.drawWithCache {
                 val blurRadiusPx = shadowWidth.toPx()
 
                 val expandedWidth = size.width
@@ -90,6 +95,9 @@ fun GlassSurface(
 
                 val expandedSize = Size(expandedWidth, expandedHeight)
                 val cornerRadiusPx = minOf(cornerRadius.toPx(), expandedSize.minDimension / 2f)
+                val customPath =
+                    (shape?.createOutline(expandedSize, layoutDirection, this) as? Outline.Generic)
+                        ?.path
                 val shouldDrawShadow = shadowColor.alpha > 0f && blurRadiusPx > 0f
                 val shadowPaddingPx = if (shouldDrawShadow) blurRadiusPx else 0f
                 val shadowPadding = ceil(shadowPaddingPx).toInt().coerceAtLeast(0)
@@ -116,20 +124,27 @@ fun GlassSurface(
                         drawImage(shadowBitmap, topLeft = shadowOffset)
                     }
 
-                    drawRoundRect(
-                        color = fillColor,
-                        topLeft = Offset(0f, 0f),
-                        size = expandedSize,
-                        cornerRadius = CornerRadius(cornerRadiusPx, cornerRadiusPx),
-                    )
+                    if (customPath != null) {
+                        drawPath(path = customPath, color = fillColor)
+                    } else {
+                        drawRoundRect(
+                            color = fillColor,
+                            topLeft = Offset(0f, 0f),
+                            size = expandedSize,
+                            cornerRadius = CornerRadius(cornerRadiusPx, cornerRadiusPx),
+                        )
+                    }
 
                     if (haloWidthPx > 0f && outlineHaloColor.alpha > 0f) {
-                        val inset = haloWidthPx / 2f
-                        val innerSize = Size(
-                            (expandedSize.width - haloWidthPx).coerceAtLeast(0f),
-                            (expandedSize.height - haloWidthPx).coerceAtLeast(0f),
-                        )
-                        if (innerSize.width > 0f && innerSize.height > 0f) {
+                        if (customPath != null) {
+                            drawPath(path = customPath, color = outlineHaloColor, style = Stroke(width = haloWidthPx))
+                        } else {
+                            val inset = haloWidthPx / 2f
+                            val innerSize = Size(
+                                (expandedSize.width - haloWidthPx).coerceAtLeast(0f),
+                                (expandedSize.height - haloWidthPx).coerceAtLeast(0f),
+                            )
+                            if (innerSize.width > 0f && innerSize.height > 0f) {
                             drawRoundRect(
                                 color = outlineHaloColor,
                                 topLeft = Offset(inset, inset),
@@ -140,16 +155,20 @@ fun GlassSurface(
                                 ),
                                 style = Stroke(width = haloWidthPx),
                             )
+                            }
                         }
                     }
 
                     if (outlineWidthPx > 0f && outlineColor.alpha > 0f) {
-                        val inset = haloWidthPx + outlineWidthPx / 2f
-                        val innerSize = Size(
-                            (expandedSize.width - inset * 2f).coerceAtLeast(0f),
-                            (expandedSize.height - inset * 2f).coerceAtLeast(0f),
-                        )
-                        if (innerSize.width > 0f && innerSize.height > 0f) {
+                        if (customPath != null) {
+                            drawPath(path = customPath, color = outlineColor, style = Stroke(width = outlineWidthPx))
+                        } else {
+                            val inset = haloWidthPx + outlineWidthPx / 2f
+                            val innerSize = Size(
+                                (expandedSize.width - inset * 2f).coerceAtLeast(0f),
+                                (expandedSize.height - inset * 2f).coerceAtLeast(0f),
+                            )
+                            if (innerSize.width > 0f && innerSize.height > 0f) {
                             drawRoundRect(
                                 color = outlineColor,
                                 topLeft = Offset(inset, inset),
@@ -160,6 +179,7 @@ fun GlassSurface(
                                 ),
                                 style = Stroke(width = outlineWidthPx),
                             )
+                            }
                         }
                     }
 

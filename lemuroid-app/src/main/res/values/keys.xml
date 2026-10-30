@@ -20,12 +20,14 @@
         <item>transparent</item>
         <item>frosted</item>
         <item>custom</item>
+        <item>match_theme</item>
     </string-array>
     <string-array translatable="false" name="pref_key_touch_button_appearance_display_names">
         <item>@string/touch_button_appearance_classic</item>
         <item>@string/touch_button_appearance_transparent</item>
         <item>@string/touch_button_appearance_frosted_white</item>
         <item>@string/touch_button_appearance_custom</item>
+        <item>@string/touch_button_appearance_match_theme</item>
     </string-array>
     <string name="pref_key_tilt_sensitivity_index" translatable="false">tilt_sensitivity_index</string>
     <string name="pref_key_hd_mode_quality" translatable="false">hd_mode_quality</string>

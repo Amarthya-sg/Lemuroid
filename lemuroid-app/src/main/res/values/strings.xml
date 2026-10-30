@@ -30,11 +30,12 @@
     <string name="settings_description_enable_autosave">Save state when exiting via game menu</string>
     <string name="settings_title_enable_touch_feedback">Vibrate on touch</string>
     <string name="settings_title_touch_button_appearance">Touch button appearance</string>
-    <string name="settings_description_touch_button_appearance">Choose transparent, frosted white, or a custom color for on-screen controls</string>
+    <string name="settings_description_touch_button_appearance">Choose a button style, including one that follows your app theme</string>
     <string name="touch_button_appearance_classic">Classic</string>
     <string name="touch_button_appearance_transparent">Translucent</string>
     <string name="touch_button_appearance_frosted_white">Frosted white</string>
     <string name="touch_button_appearance_custom">Custom color</string>
+    <string name="touch_button_appearance_match_theme">Match theme</string>
     <string name="touch_button_color_red">Red</string>
     <string name="touch_button_color_green">Green</string>
     <string name="touch_button_color_blue">Blue</string>
@@ -44,6 +45,9 @@
     <string name="touch_button_color_opacity_percent">%1$d%%</string>
     <string name="settings_theme_color_title">Theme color</string>
     <string name="settings_theme_primary_color">Primary color</string>
+    <string name="settings_theme_open_color_picker">Edit theme color</string>
+    <string name="settings_theme_picker_prompt">Tap the color swatch to choose a theme color</string>
+    <string name="settings_theme_color_done">Done</string>
     <string name="settings_theme_generated_automatically">Other theme colors are generated automatically</string>
     <string name="settings_theme_choose_hue_saturation">Choose hue and saturation</string>
     <string name="settings_theme_brightness">Brightness · %1$d%%</string>

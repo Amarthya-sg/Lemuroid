@@ -1,25 +1,35 @@
 package come.asg.lemudroid.app.mobile.feature.settings.general
 
 import android.net.Uri
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -29,8 +39,10 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
@@ -241,6 +253,8 @@ private fun GeneralSettings() {
 @Composable
 private fun ThemePrimaryColorSettings() {
     val context = LocalContext.current
+    val showColorPicker = remember { mutableStateOf(false) }
+    val openPickerDescription = stringResource(R.string.settings_theme_open_color_picker)
     val primary = LemuroidThemePreferences.getPrimaryColor(context)
     val hsv = remember(primary) { LemuroidThemePreferences.getPrimaryHsv(context) }
     // Keep HSV components independent: converting a neutral/black color back to HSV loses hue.
@@ -269,14 +283,22 @@ private fun ThemePrimaryColorSettings() {
             ) {
                 androidx.compose.foundation.layout.Box(
                     modifier =
-                        Modifier.size(40.dp).drawWithCache {
-                            onDrawBehind {
-                                drawCircle(
-                                    Color.hsv(hue.floatValue, saturation.floatValue, brightness.floatValue),
-                                    radius = size.minDimension / 2f,
-                                )
+                        Modifier.size(48.dp)
+                            .clip(CircleShape)
+                            .background(androidx.compose.material3.MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                            .clickable { showColorPicker.value = true }
+                            .drawWithCache {
+                                onDrawBehind {
+                                    drawCircle(
+                                        Color.hsv(hue.floatValue, saturation.floatValue, brightness.floatValue),
+                                        radius = size.minDimension / 2f,
+                                    )
+                                }
                             }
-                        },
+                            .semantics {
+                                contentDescription = openPickerDescription
+                                role = Role.Button
+                            },
                 )
                 Column(modifier = Modifier.weight(1f)) {
                     Text(stringResource(R.string.settings_theme_primary_color), style = androidx.compose.material3.MaterialTheme.typography.titleSmall)
@@ -286,28 +308,54 @@ private fun ThemePrimaryColorSettings() {
                     )
                 }
             }
-            Text(stringResource(R.string.settings_theme_choose_hue_saturation), style = androidx.compose.material3.MaterialTheme.typography.labelMedium)
-            ThemeColorWheel(
-                hue = hue,
-                saturation = saturation,
-                brightness = brightness,
-                onColorChange = { newHue, newSaturation ->
-                    hue.floatValue = newHue
-                    saturation.floatValue = newSaturation
-                },
-                onColorChangeFinished = { saveColor() },
-            )
             Text(
-                stringResource(R.string.settings_theme_brightness, (brightness.floatValue * 100).toInt()),
-                style = androidx.compose.material3.MaterialTheme.typography.labelMedium,
-            )
-            Slider(
-                value = brightness.floatValue,
-                onValueChange = { brightness.floatValue = it },
-                onValueChangeFinished = { saveColor() },
-                valueRange = 0f..1f,
+                stringResource(R.string.settings_theme_picker_prompt),
+                style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
             )
         }
+    }
+
+    if (showColorPicker.value) {
+        AlertDialog(
+            onDismissRequest = { showColorPicker.value = false },
+            title = { Text(stringResource(R.string.settings_theme_color_title)) },
+            text = {
+                Column(
+                    modifier = Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        stringResource(R.string.settings_theme_choose_hue_saturation),
+                        style = androidx.compose.material3.MaterialTheme.typography.labelMedium,
+                    )
+                    ThemeColorWheel(
+                        hue = hue,
+                        saturation = saturation,
+                        brightness = brightness,
+                        onColorChange = { newHue, newSaturation ->
+                            hue.floatValue = newHue
+                            saturation.floatValue = newSaturation
+                        },
+                        onColorChangeFinished = { saveColor() },
+                    )
+                    Text(
+                        stringResource(R.string.settings_theme_brightness, (brightness.floatValue * 100).toInt()),
+                        style = androidx.compose.material3.MaterialTheme.typography.labelMedium,
+                    )
+                    Slider(
+                        value = brightness.floatValue,
+                        onValueChange = { brightness.floatValue = it },
+                        onValueChangeFinished = { saveColor() },
+                        valueRange = 0f..1f,
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showColorPicker.value = false }) {
+                    Text(stringResource(R.string.settings_theme_color_done))
+                }
+            },
+        )
     }
 }
 

@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -22,6 +23,7 @@ fun LemuroidButtonForeground(
     pressed: State<Boolean>,
     label: (@Composable BoxWithConstraintsScope.() -> Unit),
     icon: (@Composable BoxWithConstraintsScope.() -> Unit),
+    shape: Shape? = null,
 ) {
     val theme = LocalLemuroidPadTheme.current
 
@@ -34,6 +36,7 @@ fun LemuroidButtonForeground(
         outlineWidth = theme.outlineWidth,
         outlineHaloColor = theme.outlineHaloColor,
         outlineHaloWidth = theme.outlineHaloWidth,
+        shape = shape,
         content = {
             icon()
             label()
@@ -49,12 +52,14 @@ fun LemuroidButtonForeground(
     icon: Int? = null,
     iconScale: Float = 0.5f,
     labelScale: Float = 1.0f,
+    shape: Shape? = null,
 ) {
     LemuroidButtonForeground(
         modifier = modifier,
         pressed = pressed,
         label = { LemuroidButtonForegroundLabel(label, labelScale, pressed) },
         icon = { LemuroidButtonForegroundIcon(icon, iconScale, pressed) },
+        shape = shape,
     )
 }
 

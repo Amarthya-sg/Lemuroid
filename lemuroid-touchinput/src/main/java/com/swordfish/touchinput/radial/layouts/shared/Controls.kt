@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import com.swordfish.touchinput.controller.R
 import com.swordfish.touchinput.radial.controls.LemuroidControlAnalog
 import com.swordfish.touchinput.radial.controls.LemuroidControlButton
+import com.swordfish.touchinput.radial.controls.ShoulderControlSide
 import com.swordfish.touchinput.radial.settings.TouchControllerSettingsManager
 import gg.padkit.PadKitScope
 import gg.padkit.ids.Id
@@ -69,6 +70,7 @@ fun SecondaryButtonL() {
         modifier = Modifier.radialPosition(120f),
         id = Id.Key(KeyEvent.KEYCODE_BUTTON_L1),
         label = "L",
+        shoulderSide = ShoulderControlSide.LEFT,
     )
 }
 
@@ -79,6 +81,7 @@ fun SecondaryButtonR() {
         modifier = Modifier.radialPosition(60f),
         id = Id.Key(KeyEvent.KEYCODE_BUTTON_R1),
         label = "R",
+        shoulderSide = ShoulderControlSide.RIGHT,
     )
 }
 

@@ -20,13 +20,23 @@ fun LemuroidControlButton(
     id: Id.Key,
     label: String? = null,
     icon: Int? = null,
+    shoulderSide: ShoulderControlSide? = null,
 ) {
     if (!isTouchControlVisible(id)) return
     val theme = LocalLemuroidPadTheme.current
+    val shoulderShape = shoulderSide?.let(::ShoulderControlShape)
     ControlButton(
         modifier = modifier.touchControlTransform(id).padding(theme.padding),
         id = id,
-        foreground = { LemuroidButtonForeground(pressed = it, icon = icon, label = label) },
-        background = { LemuroidControlBackground() },
+        foreground = {
+            LemuroidButtonForeground(
+                pressed = it,
+                icon = icon,
+                label = label,
+                labelScale = if (shoulderSide == null) 1f else 0.72f,
+                shape = shoulderShape,
+            )
+        },
+        background = { LemuroidControlBackground(shape = shoulderShape) },
     )
 }

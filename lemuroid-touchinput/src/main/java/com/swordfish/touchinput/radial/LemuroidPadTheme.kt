@@ -16,6 +16,8 @@ class LemuroidPadTheme(
     private val isTransparent = appearance == APPEARANCE_TRANSPARENT
     private val isFrosted = appearance == APPEARANCE_FROSTED_WHITE
     private val isCustom = appearance == APPEARANCE_CUSTOM
+    private val isMatchTheme = appearance == APPEARANCE_MATCH_THEME
+    private val isColorBased = isCustom || isMatchTheme
     private val contrast = if (luminance(customColor) < 0.48f) Color.White else Color.Black
 
     val foregroundPadding: Dp = 8.dp
@@ -24,7 +26,7 @@ class LemuroidPadTheme(
         when {
             isTransparent -> Color(0xFFD4D8E1).copy(alpha = 0.74f)
             isFrosted -> Color.Black.copy(alpha = 0.42f)
-            isCustom -> contrast.copy(alpha = 0.50f)
+            isColorBased -> contrast.copy(alpha = 0.50f)
             else -> Color.White.copy(alpha = 0.52f)
         }
     val outlineWidth = 1.25.dp
@@ -34,13 +36,13 @@ class LemuroidPadTheme(
     private val level3Fill = when {
         isTransparent -> Color.White.copy(alpha = 0.12f)
         isFrosted -> Color.White.copy(alpha = 0.42f)
-        isCustom -> customColor.copy(alpha = customColor.alpha * 0.62f)
+        isColorBased -> customColor.copy(alpha = customColor.alpha * 0.62f)
         else -> gray(1.0f, 0.18f)
     }
     private val level3FillPressed = when {
         isTransparent -> Color.White.copy(alpha = 0.28f)
         isFrosted -> Color.Black.copy(alpha = 0.16f)
-        isCustom -> contrast.copy(alpha = customColor.alpha * 0.30f)
+        isColorBased -> contrast.copy(alpha = customColor.alpha * 0.30f)
         else -> gray(1.0f, 0.34f)
     }
     val level3Shadow = if (isTransparent) Color.Black.copy(alpha = 0.10f) else DefaultShadowColor.copy(0.05f)
@@ -49,13 +51,13 @@ class LemuroidPadTheme(
     private val level2Fill = when {
         isTransparent -> Color.White.copy(alpha = 0.10f)
         isFrosted -> Color.White.copy(alpha = 0.26f)
-        isCustom -> customColor.copy(alpha = customColor.alpha * 0.42f)
+        isColorBased -> customColor.copy(alpha = customColor.alpha * 0.42f)
         else -> gray(1.0f, 0.08f)
     }
     private val level2FillPressed = when {
         isTransparent -> Color.White.copy(alpha = 0.22f)
         isFrosted -> Color.Black.copy(alpha = 0.14f)
-        isCustom -> contrast.copy(alpha = customColor.alpha * 0.25f)
+        isColorBased -> contrast.copy(alpha = customColor.alpha * 0.25f)
         else -> gray(1.0f, 0.22f)
     }
     val level2Shadow = if (isTransparent) Color.Black.copy(alpha = 0.08f) else DefaultShadowColor.copy(0.05f)
@@ -64,7 +66,7 @@ class LemuroidPadTheme(
     val level1Fill = when {
         isTransparent -> Color.White.copy(alpha = 0.06f)
         isFrosted -> Color.White.copy(alpha = 0.20f)
-        isCustom -> customColor.copy(alpha = customColor.alpha * 0.28f)
+        isColorBased -> customColor.copy(alpha = customColor.alpha * 0.28f)
         else -> gray(1.0f, 0.06f)
     }
     val level1Shadow = if (isTransparent) Color.Black.copy(alpha = 0.06f) else DefaultShadowColor.copy(0.10f)
@@ -83,7 +85,7 @@ class LemuroidPadTheme(
         appearance == APPEARANCE_CLASSIC -> Color.White.copy(alpha = if (pressed) 1f else 0.88f)
         isFrosted -> if (pressed) Color.White.copy(alpha = 0.85f) else Color.Black.copy(alpha = 0.72f)
         isTransparent -> if (pressed) Color.White else Color.White.copy(alpha = 0.90f)
-        isCustom -> contrast.copy(alpha = if (pressed) 0.96f else 0.84f)
+        isColorBased -> contrast.copy(alpha = if (pressed) 0.96f else 0.84f)
         else -> Color.Black.copy(alpha = 0.50f)
     }
 
@@ -95,6 +97,7 @@ class LemuroidPadTheme(
         const val APPEARANCE_TRANSPARENT = 1
         const val APPEARANCE_FROSTED_WHITE = 2
         const val APPEARANCE_CUSTOM = 3
+        const val APPEARANCE_MATCH_THEME = 4
     }
 }
 
