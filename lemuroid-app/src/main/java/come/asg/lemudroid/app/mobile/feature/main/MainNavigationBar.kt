@@ -7,9 +7,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -33,7 +36,11 @@ private fun LemuroidNavigationBar(
     currentRoute: MainRoute?,
     navController: NavHostController,
 ) {
-    NavigationBar(modifier = Modifier.fillMaxWidth()) {
+    NavigationBar(
+        modifier = Modifier.fillMaxWidth(),
+        containerColor = MaterialTheme.colorScheme.surface,
+        tonalElevation = 0.dp,
+    ) {
         MainNavigationRoutes.values().forEach { destination ->
             val isSelected = currentRoute?.root == destination.route
             val iconDrawable = if (isSelected) destination.selectedIcon else destination.unselectedIcon
@@ -47,6 +54,14 @@ private fun LemuroidNavigationBar(
                 },
                 label = { Text(stringResource(destination.titleId)) },
                 selected = isSelected,
+                colors =
+                    NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        selectedTextColor = MaterialTheme.colorScheme.onSurface,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    ),
                 onClick = {
                     navController.navigate(destination.route.route) {
                         // Pop up to the start destination of the graph to

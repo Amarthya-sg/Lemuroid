@@ -77,8 +77,29 @@ private val DarkColorScheme =
         scrim = md_theme_dark_scrim,
     )
 
+private val HtmlDarkColorScheme =
+    darkColorScheme(
+        primary = Color(0xFF4BE37A),
+        onPrimary = Color(0xFF00391A),
+        primaryContainer = Color(0xFF1F4D2E),
+        onPrimaryContainer = Color(0xFFAAF6BF),
+        secondary = Color(0xFFB9C1B5),
+        onSecondary = Color(0xFF222620),
+        secondaryContainer = Color(0xFF2C312A),
+        onSecondaryContainer = Color(0xFFE6E9E2),
+        background = Color(0xFF141713),
+        onBackground = Color(0xFFE6E9E2),
+        surface = Color(0xFF1B1E1A),
+        onSurface = Color(0xFFE6E9E2),
+        surfaceVariant = Color(0xFF222620),
+        onSurfaceVariant = Color(0xFFB9C1B5),
+        outline = Color(0xFF7D867A),
+        outlineVariant = Color(0xFF2E332C),
+        scrim = Color(0xFF000000),
+    )
+
 private val AmoledColorScheme =
-    DarkColorScheme.copy(
+    HtmlDarkColorScheme.copy(
         background = Color.Black,
         surface = Color.Black,
         surfaceVariant = Color(0xFF101010),
@@ -89,16 +110,14 @@ fun AppTheme(
     darkTheme: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    val dynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     val amoledTheme =
         SharedPreferencesHelper.getSharedPreferences(LocalContext.current)
             .getBoolean("amoled_theme", false)
     val colors =
         when {
             darkTheme && amoledTheme -> AmoledColorScheme
-            dynamicColor && darkTheme -> dynamicDarkColorScheme(LocalContext.current)
-            dynamicColor && !darkTheme -> dynamicLightColorScheme(LocalContext.current)
-            darkTheme -> DarkColorScheme
+            darkTheme -> HtmlDarkColorScheme
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> dynamicLightColorScheme(LocalContext.current)
             else -> LightColorScheme
         }
 

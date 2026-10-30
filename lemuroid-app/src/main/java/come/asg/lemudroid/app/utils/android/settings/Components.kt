@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ListItemColors
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -91,7 +93,7 @@ fun LemuroidSettingsGroup(
     title: @Composable (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Surface {
+    Surface(color = MaterialTheme.colorScheme.background) {
         Column(
             modifier = modifier.fillMaxWidth(),
         ) {
@@ -109,14 +111,25 @@ fun LemuroidCardSettingsGroup(
     title: @Composable (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Surface {
+    Surface(color = MaterialTheme.colorScheme.background) {
         Column(
             modifier =
                 modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp),
         ) {
-            OutlinedCard {
+            OutlinedCard(
+                shape = RoundedCornerShape(24.dp),
+                colors =
+                    CardDefaults.outlinedCardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    ),
+                border =
+                    androidx.compose.foundation.BorderStroke(
+                        1.dp,
+                        MaterialTheme.colorScheme.outlineVariant,
+                    ),
+            ) {
                 if (title != null) {
                     SettingsGroupTitleSmall(title)
                 }

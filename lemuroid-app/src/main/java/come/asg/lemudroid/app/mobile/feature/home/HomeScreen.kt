@@ -6,18 +6,25 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -41,6 +48,7 @@ fun HomeScreen(
     onGameClick: (Game) -> Unit,
     onGameLongClick: (Game) -> Unit,
     onOpenCoreSelection: () -> Unit,
+    onOpenSearch: () -> Unit,
 ) {
     val context = LocalContext.current
     val applicationContext = context.applicationContext
@@ -70,6 +78,7 @@ fun HomeScreen(
         onGameClick,
         onGameLongClick,
         onOpenCoreSelection,
+        onOpenSearch,
         {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
                 return@HomeScreen
@@ -90,6 +99,7 @@ private fun HomeScreen(
     onGameClicked: (Game) -> Unit,
     onGameLongClick: (Game) -> Unit,
     onOpenCoreSelection: () -> Unit,
+    onOpenSearch: () -> Unit,
     onEnableNotificationsClicked: () -> Unit,
     onEnableMicrophoneClicked: () -> Unit,
     onSetDirectoryClicked: () -> Unit,
@@ -102,6 +112,28 @@ private fun HomeScreen(
                 .padding(top = 16.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        Surface(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .clickable(onClick = onOpenSearch),
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant,
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Icon(Icons.Default.Search, contentDescription = null)
+                Text(
+                    text = "Search games",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            }
+        }
         AnimatedVisibility(state.showNoNotificationPermissionCard) {
             HomeNotification(
                 titleId = R.string.home_notification_title,

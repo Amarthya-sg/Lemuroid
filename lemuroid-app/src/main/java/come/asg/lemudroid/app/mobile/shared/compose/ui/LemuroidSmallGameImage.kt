@@ -1,6 +1,8 @@
 package come.asg.lemudroid.app.mobile.shared.compose.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +41,7 @@ fun LemuroidSmallGameImage(
             modifier
                 .fillMaxWidth()
                 .aspectRatio(1.0f)
+                .clip(RoundedCornerShape(14.dp))
                 .background(MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)),
         fallback = fallbackPainter,
         error = fallbackPainter,

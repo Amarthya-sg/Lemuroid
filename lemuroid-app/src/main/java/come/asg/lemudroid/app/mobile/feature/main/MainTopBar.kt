@@ -90,13 +90,19 @@ fun LemuroidTopAppBar(
                     onUpdateQueryString = onUpdateQueryString,
                 )
             } else {
-                Text(text = stringResource(route.titleId))
+                Text(
+                    text = stringResource(route.titleId),
+                    style = MaterialTheme.typography.headlineSmall,
+                )
             }
         },
         colors =
             TopAppBarDefaults.topAppBarColors(
                 scrolledContainerColor = topBarColor,
                 containerColor = topBarColor,
+                titleContentColor = MaterialTheme.colorScheme.onSurface,
+                navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                actionIconContentColor = MaterialTheme.colorScheme.onSurface,
             ),
         navigationIcon = {
             AnimatedVisibility(
