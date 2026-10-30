@@ -30,8 +30,8 @@ class LemuroidPadTheme(
             else -> Color.White.copy(alpha = 0.52f)
         }
     val outlineWidth = 1.25.dp
-    val outlineHaloColor = Color(0xFF090A0D).copy(alpha = if (isTransparent) 0.90f else 0.58f)
-    val outlineHaloWidth = 3.5.dp
+    val outlineHaloColor = if (isTransparent) Color.Transparent else Color(0xFF090A0D).copy(alpha = 0.58f)
+    val outlineHaloWidth = if (isTransparent) 0.dp else 3.5.dp
 
     private val level3Fill = when {
         isTransparent -> Color.White.copy(alpha = 0.12f)
@@ -45,8 +45,8 @@ class LemuroidPadTheme(
         isColorBased -> contrast.copy(alpha = customColor.alpha * 0.30f)
         else -> gray(1.0f, 0.34f)
     }
-    val level3Shadow = if (isTransparent) Color.Black.copy(alpha = 0.10f) else DefaultShadowColor.copy(0.05f)
-    val level3ShadowWidth = 4.dp
+    val level3Shadow = if (isTransparent) Color.Transparent else DefaultShadowColor.copy(0.05f)
+    val level3ShadowWidth = if (isTransparent) 0.dp else 4.dp
 
     private val level2Fill = when {
         isTransparent -> Color.White.copy(alpha = 0.10f)
@@ -60,8 +60,8 @@ class LemuroidPadTheme(
         isColorBased -> contrast.copy(alpha = customColor.alpha * 0.25f)
         else -> gray(1.0f, 0.22f)
     }
-    val level2Shadow = if (isTransparent) Color.Black.copy(alpha = 0.08f) else DefaultShadowColor.copy(0.05f)
-    val level2ShadowWidth = 4.dp
+    val level2Shadow = if (isTransparent) Color.Transparent else DefaultShadowColor.copy(0.05f)
+    val level2ShadowWidth = if (isTransparent) 0.dp else 4.dp
 
     val level1Fill = when {
         isTransparent -> Color.White.copy(alpha = 0.06f)
@@ -69,13 +69,13 @@ class LemuroidPadTheme(
         isColorBased -> customColor.copy(alpha = customColor.alpha * 0.28f)
         else -> gray(1.0f, 0.06f)
     }
-    val level1Shadow = if (isTransparent) Color.Black.copy(alpha = 0.06f) else DefaultShadowColor.copy(0.10f)
-    val level1ShadowWidth = 4.dp
+    val level1Shadow = if (isTransparent) Color.Transparent else DefaultShadowColor.copy(0.10f)
+    val level1ShadowWidth = if (isTransparent) 0.dp else 4.dp
 
     val level0CornerRadius = 0.dp
     val level0Fill = Color.White.copy(alpha = 0.05f)
-    val level0Shadow = if (isTransparent) Color.Black.copy(alpha = 0.06f) else DefaultShadowColor.copy(0.10f)
-    val level0ShadowWidth = 2.dp
+    val level0Shadow = if (isTransparent) Color.Transparent else DefaultShadowColor.copy(0.10f)
+    val level0ShadowWidth = if (isTransparent) 0.dp else 2.dp
 
     fun compositeFill(pressed: Boolean): Color = if (pressed) level2FillPressed else level2Fill
 
