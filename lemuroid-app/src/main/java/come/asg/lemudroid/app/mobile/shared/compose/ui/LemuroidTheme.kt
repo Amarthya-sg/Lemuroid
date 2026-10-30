@@ -171,6 +171,7 @@ private fun generatedDarkColorScheme(
     val tertiary = Color.hsv((hsv[0] + 235f) % 360f, (hsv[1] * 0.48f).coerceAtLeast(0.25f), hsv[2] * 0.78f)
     val primaryContainer = primary.copy(alpha = 0.32f).compositeOver(surfaceVariant)
     val secondaryContainer = secondary.copy(alpha = 0.28f).compositeOver(surfaceVariant)
+    val tertiaryContainer = tertiary.copy(alpha = 0.28f).compositeOver(surfaceVariant)
     val onPrimary = readableContentColor(primary)
     val onPrimaryContainer = readableContentColor(primaryContainer)
 
@@ -185,6 +186,8 @@ private fun generatedDarkColorScheme(
         onSecondaryContainer = readableContentColor(secondaryContainer),
         tertiary = tertiary,
         onTertiary = readableContentColor(tertiary),
+        tertiaryContainer = tertiaryContainer,
+        onTertiaryContainer = readableContentColor(tertiaryContainer),
         background = background,
         surface = surface,
         surfaceVariant = surfaceVariant,
