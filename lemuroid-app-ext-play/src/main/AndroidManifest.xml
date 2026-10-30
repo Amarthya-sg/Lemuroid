@@ -4,7 +4,7 @@
 
     <application>
         <activity
-            android:name="com.swordfish.lemuroid.ext.feature.savesync.ActivateGoogleDriveActivity"
+            android:name="come.asg.lemudroid.ext.feature.savesync.ActivateGoogleDriveActivity"
             android:theme="@style/InvisibleTheme"/>
     </application>
 </manifest>

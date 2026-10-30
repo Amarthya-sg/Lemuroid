@@ -13,6 +13,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
@@ -66,6 +67,10 @@ fun GlassSurface(
     fillColor: Color = Color.White.copy(alpha = 0.15f),
     shadowColor: Color = Color.Black.copy(alpha = 0.3f),
     shadowWidth: Dp = 1.dp,
+    outlineColor: Color = Color.Transparent,
+    outlineWidth: Dp = 0.dp,
+    outlineHaloColor: Color = Color.Transparent,
+    outlineHaloWidth: Dp = 0.dp,
     content: @Composable BoxWithConstraintsScope.() -> Unit = { },
 ) {
     BoxWithConstraints(
@@ -84,9 +89,7 @@ fun GlassSurface(
                 }
 
                 val expandedSize = Size(expandedWidth, expandedHeight)
-
                 val cornerRadiusPx = minOf(cornerRadius.toPx(), expandedSize.minDimension / 2f)
-
                 val shouldDrawShadow = shadowColor.alpha > 0f && blurRadiusPx > 0f
                 val shadowPaddingPx = if (shouldDrawShadow) blurRadiusPx else 0f
                 val shadowPadding = ceil(shadowPaddingPx).toInt().coerceAtLeast(0)
@@ -105,6 +108,8 @@ fun GlassSurface(
                         null
                     }
 
+                val haloWidthPx = outlineHaloWidth.toPx().coerceAtMost(expandedSize.minDimension * 0.24f)
+                val outlineWidthPx = outlineWidth.toPx().coerceAtMost(expandedSize.minDimension * 0.16f)
                 onDrawWithContent {
                     if (shadowBitmap != null) {
                         val shadowOffset = -Offset(shadowPadding.toFloat(), shadowPadding.toFloat())
@@ -117,6 +122,46 @@ fun GlassSurface(
                         size = expandedSize,
                         cornerRadius = CornerRadius(cornerRadiusPx, cornerRadiusPx),
                     )
+
+                    if (haloWidthPx > 0f && outlineHaloColor.alpha > 0f) {
+                        val inset = haloWidthPx / 2f
+                        val innerSize = Size(
+                            (expandedSize.width - haloWidthPx).coerceAtLeast(0f),
+                            (expandedSize.height - haloWidthPx).coerceAtLeast(0f),
+                        )
+                        if (innerSize.width > 0f && innerSize.height > 0f) {
+                            drawRoundRect(
+                                color = outlineHaloColor,
+                                topLeft = Offset(inset, inset),
+                                size = innerSize,
+                                cornerRadius = CornerRadius(
+                                    (cornerRadiusPx - inset).coerceAtLeast(0f),
+                                    (cornerRadiusPx - inset).coerceAtLeast(0f),
+                                ),
+                                style = Stroke(width = haloWidthPx),
+                            )
+                        }
+                    }
+
+                    if (outlineWidthPx > 0f && outlineColor.alpha > 0f) {
+                        val inset = haloWidthPx + outlineWidthPx / 2f
+                        val innerSize = Size(
+                            (expandedSize.width - inset * 2f).coerceAtLeast(0f),
+                            (expandedSize.height - inset * 2f).coerceAtLeast(0f),
+                        )
+                        if (innerSize.width > 0f && innerSize.height > 0f) {
+                            drawRoundRect(
+                                color = outlineColor,
+                                topLeft = Offset(inset, inset),
+                                size = innerSize,
+                                cornerRadius = CornerRadius(
+                                    (cornerRadiusPx - inset).coerceAtLeast(0f),
+                                    (cornerRadiusPx - inset).coerceAtLeast(0f),
+                                ),
+                                style = Stroke(width = outlineWidthPx),
+                            )
+                        }
+                    }
 
                     drawContent()
                 }

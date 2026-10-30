@@ -10,6 +10,23 @@
     <string name="pref_key_save_sync_force_refresh" translatable="false">save_sync_force_refresh</string>
     <string name="pref_key_reset_gamepad_bindings" translatable="false">reset_gamepad_bindings</string>
     <string name="pref_key_haptic_feedback_mode" translatable="false">haptic_feedback_mode</string>
+    <string name="pref_key_touch_button_appearance" translatable="false">touch_button_appearance</string>
+    <string name="pref_key_touch_button_red" translatable="false">touch_button_red</string>
+    <string name="pref_key_touch_button_green" translatable="false">touch_button_green</string>
+    <string name="pref_key_touch_button_blue" translatable="false">touch_button_blue</string>
+    <string name="pref_key_touch_button_opacity" translatable="false">touch_button_opacity</string>
+    <string-array translatable="false" name="pref_key_touch_button_appearance_values">
+        <item>classic</item>
+        <item>transparent</item>
+        <item>frosted</item>
+        <item>custom</item>
+    </string-array>
+    <string-array translatable="false" name="pref_key_touch_button_appearance_display_names">
+        <item>@string/touch_button_appearance_classic</item>
+        <item>@string/touch_button_appearance_transparent</item>
+        <item>@string/touch_button_appearance_frosted_white</item>
+        <item>@string/touch_button_appearance_custom</item>
+    </string-array>
     <string name="pref_key_tilt_sensitivity_index" translatable="false">tilt_sensitivity_index</string>
     <string name="pref_key_hd_mode_quality" translatable="false">hd_mode_quality</string>
     <string name="pref_key_autosave" translatable="false">autosave</string>
@@ -28,7 +45,7 @@
 
     <string name="pref_key_shader_filter" translatable="false">shader_filter_0</string>
     <string name="pref_key_hd_mode" translatable="false">hd_mode</string>
-    <string name="pref_key_amoled_theme" translatable="false">amoled_theme</string>
+    <string name="pref_key_viewport_alignment" translatable="false">viewport_alignment</string>
 
     <string-array translatable="false" name="pref_key_haptic_feedback_mode_values">
         <item>none</item>
@@ -56,5 +73,17 @@
         <item>@string/shader_filter_names_smooth</item>
         <item>@string/shader_filter_names_crt</item>
         <item>@string/shader_filter_names_lcd</item>
+    </string-array>
+
+    <string-array translatable="false" name="pref_key_viewport_alignment_values">
+        <item>top</item>
+        <item>center</item>
+        <item>bottom</item>
+    </string-array>
+
+    <string-array translatable="false" name="pref_key_viewport_alignment_display_names">
+        <item>@string/viewport_alignment_names_top</item>
+        <item>@string/viewport_alignment_names_center</item>
+        <item>@string/viewport_alignment_names_bottom</item>
     </string-array>
 </resources>

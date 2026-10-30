@@ -20,7 +20,7 @@ android {
     defaultConfig {
         versionCode = 252
         versionName = "1.17.0" // Always remember to update Cores Tag!
-        applicationId = "com.swordfish.lemuroid"
+        applicationId = "come.asg.lemudroid"
     }
     flavorDimensions += listOf("opensource", "cores")
 
@@ -129,7 +129,7 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
-    namespace = "com.swordfish.lemuroid"
+    namespace = "come.asg.lemudroid"
 }
 
 dependencies {

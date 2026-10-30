@@ -1,8 +1,8 @@
 package com.swordfish.touchinput.radial.utils
 
 import androidx.compose.ui.geometry.Offset
-import com.swordfish.lemuroid.common.graphics.GraphicsUtils.rotatePoint
-import com.swordfish.lemuroid.common.math.computeSizeOfItemsAroundCircumference
+import come.asg.lemudroid.common.graphics.GraphicsUtils.rotatePoint
+import come.asg.lemudroid.common.math.computeSizeOfItemsAroundCircumference
 import com.swordfish.touchinput.radial.settings.TouchControllerSettingsManager
 import gg.padkit.anchors.Anchor
 import gg.padkit.ids.Id

@@ -61,7 +61,7 @@ android {
             }
         }
     }
-    namespace = "com.swordfish.lemuroid.lib"
+    namespace = "come.asg.lemudroid.lib"
     kotlinOptions {
         this as KotlinJvmOptions
         jvmTarget = "17"

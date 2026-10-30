@@ -8,7 +8,7 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
-    namespace = "com.swordfish.lemuroid.ext"
+    namespace = "come.asg.lemudroid.ext"
 }
 
 dependencies {

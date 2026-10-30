@@ -9,7 +9,7 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
-    namespace = "com.swordfish.lemuroid.common"
+    namespace = "come.asg.lemudroid.common"
 
     buildFeatures {
         compose = true

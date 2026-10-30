@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.swordfish.lemuroid.baselineprofile"
+    namespace = "come.asg.lemudroid.baselineprofile"
     compileSdk = deps.android.compileSdkVersion
 
     compileOptions {

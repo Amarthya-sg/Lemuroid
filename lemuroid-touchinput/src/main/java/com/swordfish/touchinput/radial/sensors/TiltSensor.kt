@@ -7,8 +7,8 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.view.Surface
 import android.view.WindowManager
-import com.swordfish.lemuroid.common.kotlin.CustomDelegates
-import com.swordfish.lemuroid.common.math.linearInterpolation
+import come.asg.lemudroid.common.kotlin.CustomDelegates
+import come.asg.lemudroid.common.math.linearInterpolation
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow

@@ -75,11 +75,11 @@
 ## Kotlin serialization
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.SerializationKt
--keep,includedescriptorclasses class com.swordfish.lemuroid.**$$serializer { *; }
--keepclassmembers class com.swordfish.lemuroid.** {
+-keep,includedescriptorclasses class come.asg.lemudroid.**$$serializer { *; }
+-keepclassmembers class come.asg.lemudroid.** {
     *** Companion;
 }
--keepclasseswithmembers class com.swordfish.lemuroid.** {
+-keepclasseswithmembers class come.asg.lemudroid.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
 

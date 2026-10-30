@@ -19,6 +19,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="com.android.providers.tv.permission.WRITE_EPG_DATA" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
@@ -27,7 +28,7 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
 
     <application
-        android:name="com.swordfish.lemuroid.app.LemuroidApplication"
+        android:name="come.asg.lemudroid.app.LemuroidApplication"
         android:allowBackup="true"
         android:banner="@mipmap/ic_banner"
         android:icon="@mipmap/lemuroid_launcher"
@@ -39,7 +40,7 @@
         android:supportsRtl="true"
         android:theme="@style/LemuroidMaterialTheme">
         <activity
-            android:name="com.swordfish.lemuroid.app.mobile.feature.main.MainActivity"
+            android:name="come.asg.lemudroid.app.mobile.feature.main.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -48,7 +49,7 @@
         </activity>
 
         <activity
-            android:name="com.swordfish.lemuroid.app.shared.game.ExternalGameLauncherActivity"
+            android:name="come.asg.lemudroid.app.shared.game.ExternalGameLauncherActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|mnc|colorMode|density|fontScale|fontWeightAdjustment|keyboard|layoutDirection|locale|mcc|navigation|smallestScreenSize|touchscreen|uiMode"
             android:exported="true"
             android:theme="@style/LemuroidMaterialTheme.Game">
@@ -63,7 +64,7 @@
         </activity>
 
         <activity
-            android:name="com.swordfish.lemuroid.app.mobile.feature.game.GameActivity"
+            android:name="come.asg.lemudroid.app.mobile.feature.game.GameActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|mnc|colorMode|density|fontScale|fontWeightAdjustment|keyboard|layoutDirection|locale|mcc|navigation|smallestScreenSize|touchscreen|uiMode"
             android:process=":game"
             android:theme="@style/LemuroidMaterialTheme.Game" />
@@ -79,20 +80,24 @@
             tools:node="merge" />
 
         <activity
-            android:name="com.swordfish.lemuroid.app.mobile.feature.gamemenu.GameMenuActivity"
+            android:name="come.asg.lemudroid.app.mobile.feature.gamemenu.GameMenuActivity"
             android:process=":game"
             android:theme="@style/LemuroidMaterialTheme.Menu" />
 
         <activity
-            android:name="com.swordfish.lemuroid.app.mobile.feature.input.GamePadBindingActivity"
+            android:name="come.asg.lemudroid.app.mobile.feature.input.GamePadBindingActivity"
             android:theme="@style/LemuroidMaterialTheme.Invisible" />
 
         <activity
-            android:name="com.swordfish.lemuroid.app.mobile.feature.input.GamePadShortcutBindingActivity"
+            android:name="come.asg.lemudroid.app.mobile.feature.input.GamePadShortcutBindingActivity"
             android:theme="@style/LemuroidMaterialTheme.Invisible" />
 
         <activity
-            android:name="com.swordfish.lemuroid.app.shared.settings.StorageFrameworkPickerLauncher"
+            android:name="come.asg.lemudroid.app.shared.settings.StorageFrameworkPickerLauncher"
+            android:theme="@style/LemuroidMaterialTheme.Invisible" />
+
+        <activity
+            android:name="come.asg.lemudroid.app.shared.settings.DataFolderPickerLauncher"
             android:theme="@style/LemuroidMaterialTheme.Invisible" />
 
         <!-- Leanback activities -->

@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import com.swordfish.lemuroid.common.compose.textUnit
+import come.asg.lemudroid.common.compose.textUnit
 import com.swordfish.touchinput.radial.LocalLemuroidPadTheme
 
 @Composable
@@ -30,6 +30,10 @@ fun LemuroidButtonForeground(
         fillColor = theme.foregroundFill(pressed.value),
         shadowColor = theme.level3Shadow,
         shadowWidth = theme.level3ShadowWidth,
+        outlineColor = theme.outlineColor,
+        outlineWidth = theme.outlineWidth,
+        outlineHaloColor = theme.outlineHaloColor,
+        outlineHaloWidth = theme.outlineHaloWidth,
         content = {
             icon()
             label()

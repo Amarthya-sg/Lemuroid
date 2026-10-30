@@ -14,5 +14,9 @@ fun LemuroidCompositeForeground(pressed: State<Boolean>) {
         fillColor = theme.compositeFill(pressed.value),
         shadowColor = theme.level2Shadow,
         shadowWidth = theme.level2ShadowWidth,
+        outlineColor = theme.outlineColor,
+        outlineWidth = theme.outlineWidth,
+        outlineHaloColor = theme.outlineHaloColor,
+        outlineHaloWidth = theme.outlineHaloWidth,
     )
 }
