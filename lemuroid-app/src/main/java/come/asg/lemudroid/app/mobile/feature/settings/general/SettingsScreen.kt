@@ -1,13 +1,37 @@
 package come.asg.lemudroid.app.mobile.feature.settings.general
 
 import android.net.Uri
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
 import androidx.navigation.NavController
 import come.asg.lemudroid.R
@@ -26,6 +50,12 @@ import come.asg.lemudroid.app.utils.android.settings.booleanPreferenceState
 import come.asg.lemudroid.app.utils.android.settings.indexPreferenceState
 import come.asg.lemudroid.app.utils.android.settings.intPreferenceState
 import come.asg.lemudroid.app.utils.android.stringListResource
+import come.asg.lemudroid.app.mobile.shared.compose.ui.LemuroidThemePreferences
+import kotlin.math.PI
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.hypot
+import kotlin.math.sin
 
 @Composable
 fun SettingsScreen(
@@ -199,11 +229,175 @@ private fun GeneralSettings() {
                     R.string.pref_key_viewport_alignment,
                     "center",
                     stringListResource(R.array.pref_key_viewport_alignment_values).toList(),
-                ),
+            ),
             title = { Text(text = stringResource(id = R.string.settings_title_viewport_alignment)) },
             items = stringListResource(R.array.pref_key_viewport_alignment_display_names),
         )
+        ThemePrimaryColorSettings()
     }
+}
+
+@Composable
+private fun ThemePrimaryColorSettings() {
+    val context = LocalContext.current
+    val primary = LemuroidThemePreferences.getPrimaryColor(context)
+    val hsv =
+        remember(primary) {
+            FloatArray(3).also { values ->
+                android.graphics.Color.colorToHSV(primary.toArgb(), values)
+            }
+        }
+    val hue = remember(primary) { mutableFloatStateOf(hsv[0]) }
+    val saturation = remember(primary) { mutableFloatStateOf(hsv[1]) }
+    val brightness = remember(primary) { mutableFloatStateOf(hsv[2]) }
+
+    fun updateColor() {
+        LemuroidThemePreferences.setPrimaryColor(
+            context,
+            Color.hsv(hue.floatValue, saturation.floatValue, brightness.floatValue),
+        )
+    }
+
+    LemuroidCardSettingsGroup(title = { Text("Theme color") }) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                androidx.compose.foundation.layout.Box(
+                    modifier = Modifier.background(primary, CircleShape).padding(20.dp),
+                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Primary color", style = androidx.compose.material3.MaterialTheme.typography.titleSmall)
+                    Text(
+                        "Other theme colors are generated automatically",
+                        style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
+            Text("Choose hue and saturation", style = androidx.compose.material3.MaterialTheme.typography.labelMedium)
+            ThemeColorWheel(
+                hue = hue.floatValue,
+                saturation = saturation.floatValue,
+                brightness = brightness.floatValue,
+                onColorChange = { newHue, newSaturation ->
+                    hue.floatValue = newHue
+                    saturation.floatValue = newSaturation
+                    updateColor()
+                },
+            )
+            Text("Brightness · ${(brightness.floatValue * 100).toInt()}%", style = androidx.compose.material3.MaterialTheme.typography.labelMedium)
+            Slider(
+                value = brightness.floatValue,
+                onValueChange = {
+                    brightness.floatValue = it
+                    updateColor()
+                },
+                valueRange = 0f..1f,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ThemeColorWheel(
+    hue: Float,
+    saturation: Float,
+    brightness: Float,
+    onColorChange: (Float, Float) -> Unit,
+) {
+    val wheelColors =
+        remember {
+            listOf(Color.Red, Color.Yellow, Color.Green, Color.Cyan, Color.Blue, Color.Magenta, Color.Red)
+        }
+    val latestOnColorChange = rememberUpdatedState(onColorChange)
+
+    BoxWithConstraints(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        contentAlignment = androidx.compose.ui.Alignment.Center,
+    ) {
+        val wheelSize = maxWidth.coerceAtMost(280.dp)
+        Canvas(
+            modifier =
+                Modifier.size(wheelSize)
+                    .semantics { contentDescription = "Theme color wheel; drag to choose hue and saturation" }
+                    .pointerInput(Unit) {
+                        detectTapGestures { position ->
+                            selectWheelColor(position, size.width.toFloat(), size.height.toFloat(), 16.dp.toPx()) { selectedHue, selectedSaturation ->
+                                latestOnColorChange.value(selectedHue, selectedSaturation)
+                            }
+                        }
+                    }
+                    .pointerInput(Unit) {
+                        detectDragGestures(
+                            onDragStart = { position ->
+                                selectWheelColor(position, size.width.toFloat(), size.height.toFloat(), 16.dp.toPx()) { selectedHue, selectedSaturation ->
+                                    latestOnColorChange.value(selectedHue, selectedSaturation)
+                                }
+                            },
+                            onDrag = { change, _ ->
+                                change.consume()
+                                selectWheelColor(change.position, size.width.toFloat(), size.height.toFloat(), 16.dp.toPx()) { selectedHue, selectedSaturation ->
+                                    latestOnColorChange.value(selectedHue, selectedSaturation)
+                                }
+                            },
+                        )
+                    },
+        ) {
+            val center = Offset(size.width / 2f, size.height / 2f)
+            val radius = size.minDimension / 2f - 16.dp.toPx()
+            drawCircle(
+                brush = Brush.sweepGradient(colors = wheelColors, center = center),
+                radius = radius,
+                center = center,
+            )
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(Color.White, Color.Transparent),
+                    center = center,
+                    radius = radius,
+                ),
+                radius = radius,
+                center = center,
+            )
+            drawCircle(
+                color = Color.Black.copy(alpha = 0.35f),
+                radius = radius,
+                center = center,
+                style = Stroke(width = 1.dp.toPx()),
+            )
+
+            val angle = hue * (PI.toFloat() / 180f)
+            val markerRadius = radius * saturation.coerceIn(0f, 1f)
+            val markerCenter =
+                Offset(
+                    center.x + cos(angle) * markerRadius,
+                    center.y + sin(angle) * markerRadius,
+                )
+            drawCircle(Color.Black.copy(alpha = 0.75f), radius = 10.dp.toPx(), center = markerCenter)
+            drawCircle(Color.White, radius = 7.dp.toPx(), center = markerCenter)
+            drawCircle(Color.hsv(hue, saturation, brightness), radius = 5.dp.toPx(), center = markerCenter)
+        }
+    }
+}
+
+private fun selectWheelColor(
+    position: Offset,
+    width: Float,
+    height: Float,
+    inset: Float,
+    onSelection: (Float, Float) -> Unit,
+) {
+    val dx = position.x - width / 2f
+    val dy = position.y - height / 2f
+    val radius = (minOf(width, height) / 2f - inset).coerceAtLeast(1f)
+    val hue = ((atan2(dy, dx) * (180f / PI.toFloat())) + 360f) % 360f
+    val saturation = (hypot(dx, dy) / radius).coerceIn(0f, 1f)
+    onSelection(hue, saturation)
 }
 
 @Composable

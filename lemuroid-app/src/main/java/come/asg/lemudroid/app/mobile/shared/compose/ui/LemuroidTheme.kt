@@ -7,9 +7,35 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import come.asg.lemudroid.lib.preferences.SharedPreferencesHelper
+
+object LemuroidThemePreferences {
+    private const val PRIMARY_COLOR_KEY = "theme_primary_color"
+    private val defaultPrimary = Color(0xFF4BE37A)
+    private val primaryColorState = mutableStateOf<Color?>(null)
+
+    fun getPrimaryColor(context: android.content.Context): Color {
+        if (primaryColorState.value == null) {
+            val preferences = SharedPreferencesHelper.getSharedPreferences(context)
+            primaryColorState.value = Color(preferences.getInt(PRIMARY_COLOR_KEY, defaultPrimary.toArgb()))
+        }
+        return primaryColorState.value ?: defaultPrimary
+    }
+
+    fun setPrimaryColor(context: android.content.Context, color: Color) {
+        primaryColorState.value = color
+        SharedPreferencesHelper.getSharedPreferences(context)
+            .edit()
+            .putInt(PRIMARY_COLOR_KEY, color.toArgb())
+            .apply()
+    }
+}
 
 private val LightColorScheme =
     lightColorScheme(
@@ -105,6 +131,41 @@ private val AmoledColorScheme =
         surfaceVariant = Color(0xFF101010),
     )
 
+private fun generatedDarkColorScheme(
+    primary: Color,
+    amoled: Boolean,
+): androidx.compose.material3.ColorScheme {
+    val background = if (amoled) Color.Black else Color(0xFF141713)
+    val surface = if (amoled) Color.Black else Color(0xFF1B1E1A)
+    val surfaceVariant = if (amoled) Color(0xFF101010) else Color(0xFF222620)
+    val hsv = FloatArray(3)
+    android.graphics.Color.colorToHSV(primary.toArgb(), hsv)
+    val secondary = Color.hsv((hsv[0] + 145f) % 360f, (hsv[1] * 0.55f).coerceAtLeast(0.28f), hsv[2] * 0.82f)
+    val tertiary = Color.hsv((hsv[0] + 235f) % 360f, (hsv[1] * 0.48f).coerceAtLeast(0.25f), hsv[2] * 0.78f)
+    val primaryContainer = primary.copy(alpha = 0.32f).compositeOver(surfaceVariant)
+    val secondaryContainer = secondary.copy(alpha = 0.28f).compositeOver(surfaceVariant)
+    val onPrimary = if (primary.luminance() > 0.55f) Color(0xFF07130A) else Color.White
+    val onPrimaryContainer = if (primaryContainer.luminance() > 0.5f) Color(0xFF07130A) else primary.copy(alpha = 0.92f)
+
+    return HtmlDarkColorScheme.copy(
+        primary = primary,
+        onPrimary = onPrimary,
+        primaryContainer = primaryContainer,
+        onPrimaryContainer = onPrimaryContainer,
+        secondary = secondary,
+        onSecondary = if (secondary.luminance() > 0.55f) Color(0xFF07130A) else Color.White,
+        secondaryContainer = secondaryContainer,
+        onSecondaryContainer = secondary,
+        tertiary = tertiary,
+        onTertiary = if (tertiary.luminance() > 0.55f) Color(0xFF07130A) else Color.White,
+        background = background,
+        surface = surface,
+        surfaceVariant = surfaceVariant,
+        outline = primary.copy(alpha = 0.58f).compositeOver(surfaceVariant),
+        outlineVariant = primary.copy(alpha = 0.18f).compositeOver(surfaceVariant),
+    )
+}
+
 @Composable
 fun AppTheme(
     darkTheme: Boolean = true,
@@ -113,10 +174,10 @@ fun AppTheme(
     val amoledTheme =
         SharedPreferencesHelper.getSharedPreferences(LocalContext.current)
             .getBoolean("amoled_theme", false)
+    val primaryColor = LemuroidThemePreferences.getPrimaryColor(LocalContext.current)
     val colors =
         when {
-            darkTheme && amoledTheme -> AmoledColorScheme
-            darkTheme -> HtmlDarkColorScheme
+            darkTheme -> generatedDarkColorScheme(primaryColor, amoledTheme)
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> dynamicLightColorScheme(LocalContext.current)
             else -> LightColorScheme
         }
